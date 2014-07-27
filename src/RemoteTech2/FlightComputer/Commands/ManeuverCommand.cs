@@ -12,6 +12,8 @@ namespace RemoteTech
         public double OriginalDelta { get; set; }
         public double RemainingTime { get; set; }
         public double RemainingDelta { get; set; }
+        public int ManeuverIndex { get; set; }
+        public int ManeuverIndexLabel { get; set; }
         public bool EngineActivated { get; set; }
         public override int Priority { get { return 0; } }
 
@@ -21,7 +23,7 @@ namespace RemoteTech
             {
                 if (RemainingTime > 0 || RemainingDelta > 0)
                 {
-                    string flightInfo = "Executing maneuver: " + RemainingDelta.ToString("F2") +
+                    string flightInfo = "Executing maneuver " + ManeuverIndexLabel + ": " + RemainingDelta.ToString("F2") +
                                         "m/s" + Environment.NewLine + "Remaining duration: ";
 
                     flightInfo += EngineActivated ? RTUtil.FormatDuration(RemainingTime) : "-:-";
@@ -29,7 +31,7 @@ namespace RemoteTech
                     return flightInfo + Environment.NewLine + base.Description;
                 }
                 else
-                    return "Execute planned maneuver" + Environment.NewLine + base.Description;
+                    return "Execute planned maneuver " + ManeuverIndexLabel + Environment.NewLine + base.Description;
             }
         }
 
@@ -76,7 +78,18 @@ namespace RemoteTech
                 RemainingDelta -= thrustToMass * TimeWarp.deltaTime;
                 return false;
             }
-            f.Enqueue(AttitudeCommand.Off(), true, true, true);
+            f.Vessel.patchedConicSolver.RemoveManeuverNode(f.Vessel.patchedConicSolver.maneuverNodes[ManeuverIndex]);
+            foreach (var c in f.QueuedCommands)
+            {
+                if (c.GetType().ToString() == "RemoteTech.ManeuverCommand")
+                {
+                    ManeuverCommand mv = (ManeuverCommand)c;
+                    mv.ManeuverIndex = mv.ManeuverIndex - 1;
+                }
+            }
+            RTUtil.ScreenMessage("[Flight Computer]: Maneuver " + ManeuverIndexLabel + " removed");
+            f.Enqueue(AttitudeCommand.ManeuverNode(), true, true, true);
+
             return true;
         }
 
@@ -102,8 +115,17 @@ namespace RemoteTech
                     nodeRotation = node.nodeRotation,
                 },
                 TimeStamp = node.UT - advance,
+                ManeuverIndex = 0,
             };
             return newNode;
+        }
+
+        public static ManeuverCommand WithNode(ManeuverNode node, FlightComputer f, int index)
+        {
+            ManeuverCommand tmpSetter = ManeuverCommand.WithNode(node, f);
+            tmpSetter.ManeuverIndex = index;
+            tmpSetter.ManeuverIndexLabel = (index + 1);
+            return tmpSetter;
         }
     }
 }

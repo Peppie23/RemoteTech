@@ -167,6 +167,27 @@ namespace RemoteTech
 
         public static AttitudeCommand ManeuverNode()
         {
+            var satellite = RTCore.Instance.Satellites[FlightGlobals.ActiveVessel];
+            if (satellite == null || satellite.SignalProcessor.FlightComputer == null) return AttitudeCommand.Off();
+            var flightComputer = satellite.SignalProcessor.FlightComputer;
+
+            // check for ManeuverNode Commands
+            bool maneuverHere = false;
+            foreach (var c in flightComputer.QueuedCommands)
+            {
+                if (c.GetType().ToString() == "RemoteTech.ManeuverCommand")
+                {
+                    maneuverHere = true;
+                    break;
+                }
+            }
+
+            if (!maneuverHere)
+            {
+                RTUtil.ScreenMessage("[Flight Computer]: No Maneuver in queue, switching back to off");
+                return AttitudeCommand.Off();
+            }
+
             return new AttitudeCommand()
             {
                 Mode = FlightMode.AttitudeHold,
