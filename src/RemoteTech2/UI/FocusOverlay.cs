@@ -107,7 +107,7 @@ namespace RemoteTech
                         if (satellite == null || satellite.SignalProcessor.FlightComputer == null) return;
                         var flightComputer = satellite.SignalProcessor.FlightComputer;
 
-                        var cmd = ManeuverCommand.WithNode(node, flightComputer, i);
+                        var cmd = ManeuverCommand.WithNode(node, flightComputer);
 
                         Vector3 screenCoord = gizmo.camera.WorldToScreenPoint(gizmo.transform.position);
                         Vector3 screenCenter = new Vector2(Screen.width / 2, Screen.height / 2);
@@ -116,7 +116,7 @@ namespace RemoteTech
                         double btnDim = 18.0f + (8.0f * ((1.2f / screenCenter.magnitude) * Math.Abs(dist)));
 
                         //btnDim = btnDim * lossyScale;
-                        Rect screenPos = new Rect(screenCoord.x - (float)btnDim,
+                        Rect screenPos = new Rect(screenCoord.x - (float)btnDim - 3.0f,
                                                   Screen.height - screenCoord.y - (float)btnDim,
                                                   (float)btnDim,
                                                   (float)btnDim);
