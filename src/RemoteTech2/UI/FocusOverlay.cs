@@ -116,8 +116,8 @@ namespace RemoteTech
                         double btnDim = 18.0f + (8.0f * ((1.2f / screenCenter.magnitude) * Math.Abs(dist)));
 
                         //btnDim = btnDim * lossyScale;
-                        Rect screenPos = new Rect(screenCoord.x - (float)btnDim - 3.0f,
-                                                  Screen.height - screenCoord.y - (float)btnDim,
+                        Rect screenPos = new Rect(screenCoord.x - (float)btnDim - 7.0f,
+                                                  Screen.height - screenCoord.y - (float)btnDim - 3.0f,
                                                   (float)btnDim,
                                                   (float)btnDim);
 
