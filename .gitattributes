@@ -3,6 +3,8 @@
 ###############################################################################
 * text=auto
 *.cfg text eol=crlf
+*.version text eol=crlf
+*.txt text eol=crlf
 
 ###############################################################################
 # Set default behavior for command prompt diff.
