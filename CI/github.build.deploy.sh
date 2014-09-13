@@ -38,7 +38,7 @@ then
 fi
 
 echo "Copy the licence to the game data folder"
-wget -O "GameData/RemoteTech2/LICENSE.txt" "https://raw.githubusercontent.com/RemoteTechnologiesGroup/RemoteTech/master/LICENSE.txt"
+cp "LICENSE.txt" "GameData/RemoteTech2/LICENSE.txt"
 
 echo "Build ${TRAVIS_BUILD_NUMBER} from branch ${TRAVIS_BRANCH} in ${TRAVIS_REPO_SLUG}" > GameData/build.txt
 echo "Built from commit ${TRAVIS_COMMIT} with tag ${BUILDTAG}" >>  GameData/build.txt
