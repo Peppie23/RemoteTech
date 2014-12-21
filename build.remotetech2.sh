@@ -32,5 +32,5 @@ then
    rm -f dlls.zip
 fi
 
-cd src/RemoteTech2 && xbuild
+cd src/RemoteTech2 && xbuild /p:Configuration=Release 
 
