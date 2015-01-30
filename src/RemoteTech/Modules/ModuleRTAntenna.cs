@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using RemoteTech.UI;
 using UnityEngine;
+using KSPAPIExtensions;
 
 namespace RemoteTech.Modules
 {
@@ -92,6 +93,94 @@ namespace RemoteTech.Modules
 
         [KSPField(isPersistant = true)]
         public double RTDishCosAngle = 1.0f;
+
+        #region frequency addon
+
+        [UI_ChooseOption(options = new string[] { "P-Band", "L-Band", "S-Band", "C-Band", "X-Band", "Ku-Band", "Ka-Band" },scene=UI_Scene.Editor)]
+        [KSPField(isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "Spectrum")]
+        public string radioSpectrum = "P-Band";
+        public string radioTest = "";
+
+        [KSPField(guiActiveEditor = true, guiActive = true, guiName = "Frequency")]
+        public string frequency = "";
+
+        [KSPField(guiName = "Energy", guiActiveEditor = true, guiActive = false, guiUnits = "charge/s")]
+        public float energie = 0.0f;
+
+        public void changeFrequency()
+        {
+            float range = 0;
+            if (radioTest != radioSpectrum)
+            {
+                switch (radioSpectrum)
+                {
+                    case "P-Band":
+                        {
+                            frequency = "0.23 - 1.0GHz";
+                            EnergyCost = 0.04f;
+                            range = 500;
+                            break;
+                        }
+                    case "L-Band":
+                        {
+                            frequency = "1.53 - 2.7GHz";
+                            EnergyCost = 0.13f;
+                            range = 250000;
+                            break;
+                        }
+                    case "S-Band":
+                        {
+                            frequency = "2.7 - 3.5GHz";
+                            EnergyCost = 0.35f;
+                            range = 1000000;
+                            break;
+                        }
+                    case "C-Band":
+                        {
+                            frequency = "3.4 - 4.2GHz";
+                            EnergyCost = 0.55f;
+                            range = 90000000;
+                            break;
+                        }
+                    case "X-Band":
+                        {
+                            frequency = "8.4 - 8.5GHz";
+                            EnergyCost = 0.76f;
+                            range = 40000000000;
+                            break;
+                        }
+                    case "Ku-Band":
+                        {
+                            frequency = "11.7 - 14.5GHz";
+                            EnergyCost = 0.98f;
+                            range = 60000000000;
+                            break;
+                        }
+                    case "Ka-Band":
+                        {
+                            frequency = "17.7 - 31.0GHz";
+                            EnergyCost = 1.40f;
+                            range = 2000000000;
+                            break;
+                        }
+                }
+
+                if (this.CanTarget)
+                {
+                    Mode0DishRange = Mode1DishRange = range *= 1.64f;
+                }
+                else
+                {
+                    Mode0OmniRange = Mode1OmniRange = range;
+                    EnergyCost *= 1.87f;
+                }
+
+                radioTest = radioSpectrum;
+                energie = Consumption;
+            }
+        }
+
+        #endregion
 
         [KSPField(isPersistant = true)]
         public float
@@ -378,6 +467,12 @@ namespace RemoteTech.Modules
                     IsRTPowered = false;
                     break;
             }
+
+            if (HighLogic.LoadedScene == GameScenes.EDITOR)
+            {
+                changeFrequency();
+            }
+
             RTDishRange = Dish;
             RTOmniRange = Omni;
             HandleDynamicPressure();
@@ -390,6 +485,7 @@ namespace RemoteTech.Modules
             GUI_DishRange = RTUtil.FormatSI(Dish, "m");
             GUI_EnergyReq = RTUtil.FormatConsumption(Consumption);
             Events["EventTarget"].guiName = RTUtil.TargetName(Target);
+            changeFrequency();
         }
 
         /// <summary>
