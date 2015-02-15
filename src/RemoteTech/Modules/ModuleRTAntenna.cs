@@ -60,6 +60,7 @@ namespace RemoteTech.Modules
         public String GUI_DishRange;
         [KSPField(guiName = "Energy")]
         public String GUI_EnergyReq;
+        
         [KSPField(guiName = "Omni range")]
         public String GUI_OmniRange;
         [KSPField(guiName = "Status")]
@@ -76,12 +77,25 @@ namespace RemoteTech.Modules
         [KSPField]
         public float
             Mode0DishRange = -1.0f,
-            Mode1DishRange = -1.0f,
             Mode0OmniRange = 0.0f,
-            Mode1OmniRange = 0.0f,
-            EnergyCost = 0.0f,
             DishAngle = 0.0f,
             MaxQ = -1;
+
+        [KSPField(isPersistant=true)]
+        public float
+            Mode1DishRange = -1.0f,
+            Mode1OmniRange = 0.0f;
+
+        [KSPField(guiName = "Energy", guiActiveEditor = true, isPersistant=true),
+         UI_FloatRange(controlEnabled = true, minValue = 0.0f, maxValue = 0.0f)]
+        public float EnergyCost = 0.0f;
+
+        /// <summary>Holds the max Omni range from the cfg</summary>
+        private float BaseOmniRange;
+        /// <summary>Holds the max Disch range from the cfg</summary>
+        private float BaseDishRange;
+        /// <summary>Holds the max energy costs from the cfg</summary>
+        private float BaseEnergyCost;
 
         [KSPField(isPersistant = true)]
         public bool
@@ -290,10 +304,28 @@ namespace RemoteTech.Modules
             Events["EventTarget"].guiActive = (Mode1DishRange > 0);
             Events["EventTarget"].active = Events["EventTarget"].guiActive;
 
+            // show the range fields on the editor
+            Fields["GUI_OmniRange"].guiActiveEditor = (Mode1OmniRange > 0);
+            Fields["GUI_DishRange"].guiActiveEditor = (Mode1DishRange > 0);
+
             Fields["GUI_OmniRange"].guiActive = (Mode1OmniRange > 0) && ShowGUI_OmniRange;
             Fields["GUI_DishRange"].guiActive = (Mode1DishRange > 0) && ShowGUI_DishRange;
             Fields["GUI_EnergyReq"].guiActive = (EnergyCost > 0) && ShowGUI_EnergyReq;
             Fields["GUI_Status"].guiActive = ShowGUI_Status;
+
+            // backup the defined values from the cfg for calculations
+            this.BaseDishRange = this.Mode1DishRange;
+            this.BaseOmniRange = this.Mode1OmniRange;
+            this.BaseEnergyCost = this.EnergyCost;
+
+            // calculate the energy slider
+            var EnergySlider = (UI_FloatRange)Fields["EnergyCost"].uiControlEditor;
+            // min = 1/4 of the defined energy costs
+            EnergySlider.minValue = this.BaseEnergyCost * 0.25f;
+            // max = +85% of the defined energy costs
+            EnergySlider.maxValue = this.BaseEnergyCost * 1.85f;
+            // stepInc = 1% of the defined energy costs
+            EnergySlider.stepIncrement = this.BaseEnergyCost * 0.01f;
 
             if (RTCore.Instance != null)
             {
@@ -389,6 +421,18 @@ namespace RemoteTech.Modules
             GUI_OmniRange = RTUtil.FormatSI(Omni, "m");
             GUI_DishRange = RTUtil.FormatSI(Dish, "m");
             GUI_EnergyReq = RTUtil.FormatConsumption(Consumption);
+
+            // calculate new range from the editor
+            if (HighLogic.LoadedSceneIsEditor)
+            {
+                this.Mode1OmniRange = (this.BaseOmniRange / this.BaseEnergyCost) * this.EnergyCost;
+                this.Mode1DishRange = (this.BaseDishRange / this.BaseEnergyCost) * this.EnergyCost;
+
+                GUI_OmniRange = RTUtil.FormatSI(this.Mode1OmniRange, "m");
+                GUI_DishRange = RTUtil.FormatSI(this.Mode1DishRange, "m");
+                GUI_EnergyReq = RTUtil.FormatConsumption(this.EnergyCost);
+            }
+
             Events["EventTarget"].guiName = RTUtil.TargetName(Target);
         }
 
