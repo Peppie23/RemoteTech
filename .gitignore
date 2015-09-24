@@ -157,6 +157,7 @@ $RECYCLE.BIN/
 
 # Ignore dependencies and builds
 src/RemoteTech/*.dll
+GameData/RemoteTech/Plugins/
 *.zip
 GameData/RemoteTech/Plugins/RemoteTech.dll
 GameData/build.txt
